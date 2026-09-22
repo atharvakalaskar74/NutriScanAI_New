@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}AI Food Scanner — NutriScan AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 850px;">
+    <!-- Page Title -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">📷 AI Food Scanner</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 580px; margin: 0 auto;">
+            Capture food with your device camera or upload a photo. Gemini AI will classify food vs. non-food, identify individual items, estimate weights, and compute full nutritional macros.
+        </p>
+    </div>
+
+    <!-- Scanner Control Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <!-- Input Mode Selection Buttons -->
+        <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button type="button" id="btn-open-camera" class="btn btn-primary">
+                🎥 Open Camera
+            </button>
+            <button type="button" id="btn-trigger-upload" class="btn btn-secondary">
+                📁 Upload Food Image
+            </button>
+            <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" style="display: none;">
+        </div>
+
+        <!-- Scanner Viewport / Camera / Preview -->
+        <div class="scanner-viewport" id="scanner-viewport">
+            <!-- Video element for live camera stream -->
+            <video id="camera-video" autoplay playsinline muted style="display: none;"></video>
+            
+            <!-- Preview image element for captured or uploaded picture -->
+            <img id="preview-image" alt="Food preview" style="display: none;">
+            
+            <!-- Default Placeholder -->
+            <div id="viewport-placeholder" style="text-align: center; color: var(--text-dim); padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🍽️</div>
+                <p style="font-size: 0.95rem;">Camera is currently inactive.<br>Click <strong>Open Camera</strong> or <strong>Upload Image</strong>.</p>
+            </div>
+
+            <!-- Viewfinder Overlay & Scanning Radar Beam -->
+            <div class="scanner-overlay" id="scanner-overlay" style="display: none;">
+                <div style="font-size: 0.75rem; color: var(--primary-light); font-weight: 600; text-transform: uppercase;">
+                    NutriScan AI Vision Viewfinder
+                </div>
+                <div class="scan-beam" id="scan-beam"></div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); text-align: right;">
+                    Align plate in frame
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera Control Bar (Visible when camera is active) -->
+        <div id="camera-controls" style="display: none; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <button type="button" id="btn-capture" class="btn btn-primary">
+                📸 Capture Photo
+            </button>
+            <button type="button" id="btn-close-camera" class="btn btn-secondary">
+                ✕ Close Camera
+            </button>
+        </div>
+
+        <!-- Action / Analyze Bar -->
+        <div id="analysis-actions" style="display: none; text-align: center; margin-top: 1rem;">
+            <button type="button" id="btn-analyze" class="btn btn-primary btn-lg" style="min-width: 240px;">
+                ✨ Analyze Food with AI
+            </button>
+            <button type="button" id="btn-retake" class="btn btn-secondary btn-lg" style="margin-left: 0.75rem;">
+                🔄 Retake Photo
+            </button>
+        </div>
+
+        <!-- Loading State Bar -->
+        <div id="scanning-status" style="display: none; text-align: center; padding: 1.5rem 0;">
+            <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(16,185,129,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 0.75rem;"></div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-main);">
+                Gemini AI is analyzing your image...
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">
+                Detecting food, identifying dishes, and computing portion nutrition...
+            </p>
+        </div>
+    </div>
+
+    <!-- REJECTION BANNER: Food vs Non-Food Detection -->
+    <div id="rejection-box" style="display: none; margin-bottom: 2rem;">
+        <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08); padding: 1.5rem;">
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <div style="font-size: 2.2rem; line-height: 1;">⚠️</div>
+                <div>
+                    <h3 style="color: #fca5a5; font-size: 1.25rem; margin-bottom: 0.35rem;">
+                        Non-Food Image Detected
+                    </h3>
+                    <p id="rejection-reason-text" style="color: var(--text-main); font-size: 0.95rem; margin-bottom: 0.75rem;">
+                        This image does not appear to contain food. Please point your camera at an edible food item.
+                    </p>
+                    <p style="color: var(--text-dim); font-size: 0.82rem;">
+                        NutriScan AI safety checks prevent calculating nutrition for non-food objects, electronics, pets, or people.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANALYSIS RESULTS SECTION (Populated dynamically upon food detection) -->
+    <div id="results-box" style="display: none; margin-bottom: 2.5rem;">
+        <div class="card" style="border-color: var(--border-highlight); box-shadow: var(--shadow-glow);">
+            <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                <div>
+                    <span class="badge badge-source-ai" style="margin-bottom: 0.35rem;">AI Food Vision Verified</span>
+                    <h2 class="card-title" style="font-size: 1.5rem;">Food Detected on Plate</h2>
+                </div>
+                <div id="detection-confidence" style="font-size: 0.85rem; color: var(--primary-light); font-weight: 600;">
+                    95% AI Confidence
+                </div>
+            </div>
+
+            <!-- Identified Food Items (Editable Weights) -->
+            <div style="margin: 1.5rem 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1.1rem; color: var(--text-main);">
+                        Identified Food Items
+                    </h3>
+                    <span style="font-size: 0.82rem; color: var(--text-dim);">
+                        ✏️ Edit weight (g) to recalculate nutrition automatically
+                    </span>
+                </div>
+
+                <div id="food-items-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Injected dynamically by scanner.js -->
+                </div>
+            </div>
+
+            <!-- Total Scaled Nutrition Summary -->
+            <div style="background: rgba(11, 17, 32, 0.75); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 1rem;">
+                    Estimated Total Nutrition (All Items)
+                </h3>
+                <div class="grid-4" style="text-align: center;">
+                    <div style="background: rgba(255,255,255,0.03); padding: 0.85rem; border-radius: var(--radius-sm);">
+                        <div id="total-calories-val" style="font-size: 1.8rem; font-weight: 800; color: var(--primary-light);">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase;">Total Calories (kcal)</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 0.85rem; border-radius: var(--radius-sm);">
+                        <div id="total-protein-val" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-blue);">0g</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase;">Total Protein</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 0.85rem; border-radius: var(--radius-sm);">
+                        <div id="total-carbs-val" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-amber);">0g</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase;">Total Carbs</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 0.85rem; border-radius: var(--radius-sm);">
+                        <div id="total-fat-val" style="font-size: 1.8rem; font-weight: 800; color: #f43f5e;">0g</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase;">Total Fat</div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-around; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                    <span>Fiber: <strong id="total-fiber-val" style="color: var(--text-main);">0g</strong></span>
+                    <span>Sugar: <strong id="total-sugar-val" style="color: var(--text-main);">0g</strong></span>
+                </div>
+            </div>
+
+            <!-- Save Meal Section -->
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--border-highlight); border-radius: var(--radius-md); padding: 1.5rem;">
+                <h3 style="font-size: 1.15rem; margin-bottom: 1rem; color: var(--text-main);">
+                    💾 Save to Your Meal History
+                </h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="save-meal-type">Meal Category</label>
+                        <select id="save-meal-type" class="form-select">
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch" selected>Lunch</option>
+                            <option value="dinner">Dinner</option>
+                            <option value="snack">Snack</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="save-meal-notes">Notes (Optional)</label>
+                        <input type="text" id="save-meal-notes" class="form-control" placeholder="e.g. Homemade, post-workout lunch">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem;">
+                    <button type="button" id="btn-save-meal" class="btn btn-primary btn-lg" style="min-width: 200px;">
+                        ✅ Save Meal to Log
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,20 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environment variables
+.env
+
+# Uploads (ignore all uploaded files except .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# IDE / System
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db

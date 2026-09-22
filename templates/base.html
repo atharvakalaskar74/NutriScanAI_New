@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NutriScan AI — AI-Powered Food Recognition & Nutrition Assistant{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Main Navigation Header -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="{% if session.get('user_id') %}{{ url_for('dashboard.dashboard_page') }}{% else %}{{ url_for('index') }}{% endif %}" class="brand">
+                <div class="brand-icon">🥗</div>
+                <span>NutriScan <span class="brand-accent">AI</span></span>
+            </a>
+
+            <button class="mobile-toggle" id="mobile-nav-toggle" aria-label="Toggle navigation">☰</button>
+
+            <ul class="nav-links" id="nav-links">
+                {% if session.get("user_id") %}
+                    <li><a href="{{ url_for('dashboard.dashboard_page') }}" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">📊 Dashboard</a></li>
+                    <li><a href="{{ url_for('scanner.scanner_page') }}" class="nav-btn-scan">📷 Scan Food</a></li>
+                    <li><a href="{{ url_for('meal.history_page') }}" class="nav-link {% if request.path == '/meal-history' %}active{% endif %}">📖 Meal History</a></li>
+                    <li><a href="{{ url_for('goals.goals_page') }}" class="nav-link {% if request.path == '/goals' %}active{% endif %}">🎯 Nutrition Goals</a></li>
+                    <li><a href="{{ url_for('chatbot.assistant_page') }}" class="nav-link {% if request.path == '/assistant' %}active{% endif %}">🤖 AI Assistant</a></li>
+                    <li><a href="{{ url_for('goals.profile_page') }}" class="nav-link {% if request.path == '/profile' %}active{% endif %}">👤 {{ session.get("user_name", "Profile").split()[0] }}</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link" style="color: var(--accent-red);">🚪 Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
+                    <li><a href="{{ url_for('auth.login_page') }}" class="nav-link">Sign In</a></li>
+                    <li><a href="{{ url_for('auth.register_page') }}" class="btn btn-primary btn-sm">Get Started Free</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Flash Notification Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <span>{{ message }}</span>
+                        <button class="alert-close" onclick="this.parentElement.remove();">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Page Body -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Application Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main);">
+                <span>🥗 NutriScan AI</span> &bull; <span>Smart Food Vision & Nutrition Engine</span>
+            </div>
+            <p class="disclaimer-text">
+                <strong>Medical & Accuracy Disclaimer:</strong> Nutritional data and portion sizes estimated by NutriScan AI and Google Gemini are approximations for general wellness tracking only. Actual values vary based on ingredients, preparation, and portion size. This application does not offer medical advice or diagnostic dietary prescriptions.
+            </p>
+            <div style="font-size: 0.78rem; color: var(--text-dim);">
+                &copy; 2026 NutriScan AI. Powered by Google Gemini 2.5 Multimodal AI.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

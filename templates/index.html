@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}NutriScan AI — AI-Powered Food Recognition & Nutrition Assistant{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div style="text-align: center; padding: 3rem 1rem 4rem; max-width: 850px; margin: 0 auto;">
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.35rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; color: var(--primary-light); margin-bottom: 1.5rem;">
+            <span>✨ Powered by Google Gemini Multimodal AI</span>
+        </div>
+        <h1 style="font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.15; margin-bottom: 1.25rem;">
+            Intelligent Food Recognition & <span style="background: linear-gradient(135deg, var(--primary-light), var(--accent-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Personal Nutrition</span>
+        </h1>
+        <p style="font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 680px; margin-left: auto; margin-right: auto;">
+            Scan any meal with your camera. NutriScan AI identifies foods, estimates portion weights, calculates macros, and verifies food vs. non-food images with deep AI precision.
+        </p>
+
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('scanner.scanner_page') }}" class="btn btn-primary btn-lg">📷 Open Food Scanner</a>
+                <a href="{{ url_for('dashboard.dashboard_page') }}" class="btn btn-secondary btn-lg">📊 Go to Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('auth.register_page') }}" class="btn btn-primary btn-lg">🚀 Get Started Free</a>
+                <a href="{{ url_for('auth.login_page') }}" class="btn btn-secondary btn-lg">🔑 Sign In</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Live Preview Card Banner -->
+    <div class="card" style="margin-bottom: 3.5rem; background: linear-gradient(180deg, var(--bg-card), rgba(19, 29, 51, 0.4)); border: 1px solid var(--border-highlight); padding: 2.5rem; text-align: center;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-around; gap: 2rem; align-items: center;">
+            <div style="flex: 1; min-width: 250px; text-align: left;">
+                <span class="badge badge-source-ai" style="margin-bottom: 0.5rem;">Live AI Demo Workflow</span>
+                <h2 style="font-size: 1.8rem; margin-bottom: 0.75rem;">Multi-Food Plate Analysis</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.25rem;">
+                    From single ingredients to mixed Indian thalis and complex dishes. Gemini identifies distinct components (Rice, Dal, Paneer, Salad), estimates serving grams, and recalculates real-time macros on demand.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--text-main);">
+                    <div>✅ <strong>Zero limits:</strong> Identifies foods never seen in static databases</div>
+                    <div>🛡️ <strong>Safety check:</strong> Instantly rejects faces, pets, and non-food items</div>
+                    <div>⚖️ <strong>Dynamic tuning:</strong> Change 250g to 300g with instant recalculation</div>
+                </div>
+            </div>
+
+            <div style="flex: 1; min-width: 280px; max-width: 420px; background: rgba(11, 17, 32, 0.85); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-main);">Chicken Biryani & Salad</div>
+                        <div style="font-size: 0.8rem; color: var(--primary-light);">Estimated 350g portion</div>
+                    </div>
+                    <span class="badge badge-source-ai">Gemini 2.5</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; margin-bottom: 1rem;">
+                    <div style="background: rgba(255,255,255,0.04); padding: 0.5rem; border-radius: var(--radius-sm);">
+                        <div style="font-size: 1.15rem; font-weight: 700; color: var(--primary-light);">560</div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim);">Calories</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.04); padding: 0.5rem; border-radius: var(--radius-sm);">
+                        <div style="font-size: 1.15rem; font-weight: 700; color: var(--accent-blue);">28g</div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim);">Protein</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.04); padding: 0.5rem; border-radius: var(--radius-sm);">
+                        <div style="font-size: 1.15rem; font-weight: 700; color: var(--accent-amber);">68g</div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim);">Carbs</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                    <span>Fat: 20.5g</span>
+                    <span>Fiber: 4.2g</span>
+                    <span>Confidence: 96%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Pillars -->
+    <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">Why NutriScan AI?</h2>
+    <div class="grid-4" style="margin-bottom: 4rem;">
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">📷</div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Camera & Upload</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Capture live images directly through your mobile or laptop webcam via WebRTC, or upload existing photos.
+            </p>
+        </div>
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">🛡️</div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Food vs. Non-Food</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Filters out non-food images like faces, laptops, pets, or cars with friendly explanations before calculating.
+            </p>
+        </div>
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">🎯</div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Mifflin-St Jeor TDEE</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Scientifically calculated personal calorie and macro targets tailored to weight loss, maintenance, or muscle building.
+            </p>
+        </div>
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">🤖</div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">AI Nutrition Assistant</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Chat with an intelligent nutritionist that knows your daily remaining calories and recommends healthy meals.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

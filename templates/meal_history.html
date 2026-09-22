@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Meal History — NutriScan AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+    <!-- Header & Date Navigation -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 2.2rem; margin-bottom: 0.25rem;">📖 Meal History</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Showing food records for: <strong>{{ formatted_date }}</strong>
+            </p>
+        </div>
+
+        <!-- Date Filter Control -->
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <input type="date" id="history-date-picker" class="form-control" style="width: auto; padding: 0.45rem 0.8rem;" value="{{ selected_date_str }}">
+            <button type="button" id="btn-today" class="btn btn-secondary btn-sm" onclick="goToDate('today')">Today</button>
+            <button type="button" id="btn-yesterday" class="btn btn-secondary btn-sm" onclick="goToDate('yesterday')">Yesterday</button>
+        </div>
+    </div>
+
+    <!-- Daily Total Intake Card for Selected Date -->
+    <div class="card" style="margin-bottom: 2rem; border-color: var(--border-highlight);">
+        <div class="card-header" style="margin-bottom: 0.75rem;">
+            <span class="card-title">📊 Total Nutrition for {{ formatted_date }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-dim);">{{ summary.get('meal_count', 0) }} meals logged</span>
+        </div>
+
+        <div class="grid-4" style="text-align: center;">
+            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary-light);">
+                    {{ summary.get('total_calories', 0)|round(0)|int }}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Calories (kcal)</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-blue);">
+                    {{ summary.get('total_protein_g', 0)|round(1) }}g
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Protein</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-amber);">
+                    {{ summary.get('total_carbs_g', 0)|round(1) }}g
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Carbs</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="font-size: 1.6rem; font-weight: 800; color: #f43f5e;">
+                    {{ summary.get('total_fat_g', 0)|round(1) }}g
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Fat</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meals List -->
+    {% if meals %}
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% for meal in meals %}
+                <div class="card" id="meal-card-{{ meal['id'] }}" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="badge badge-{{ meal['meal_type'] }}">{{ meal['meal_type'] }}</span>
+                            <span style="color: var(--text-muted); font-size: 0.9rem;">Logged at {{ meal['meal_time'] }}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-light);">
+                                {{ meal['total_calories']|round(0)|int }} kcal
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteMeal({{ meal['id'] }})">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">
+                            Items in this Meal:
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            {% for item in meal.get('items', []) %}
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(11, 17, 32, 0.5); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                    <div>
+                                        <strong style="color: var(--text-main);">{{ item['food_name'] }}</strong>
+                                        <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 0.5rem;">
+                                            {{ item['weight_g']|round(0)|int }}g
+                                        </span>
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                        <span>{{ item['calories']|round(0)|int }} kcal</span> &bull;
+                                        <span>P: {{ item['protein_g']|round(1) }}g</span> &bull;
+                                        <span>C: {{ item['carbs_g']|round(1) }}g</span> &bull;
+                                        <span>F: {{ item['fat_g']|round(1) }}g</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if meal.get('notes') %}
+                        <div style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.5rem;">
+                            💬 <em>{{ meal['notes'] }}</em>
+                        </div>
+                    {% endif %}
+
+                    {% if meal.get('image_url') %}
+                        <div style="margin-top: 0.5rem;">
+                            <a href="{{ meal['image_url'] }}" target="_blank" style="font-size: 0.82rem; color: var(--accent-blue);">
+                                🖼️ View Attached Food Photo
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="card" style="text-align: center; padding: 3.5rem 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 0.75rem;">🍽️</div>
+            <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">No meals found for this date</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 420px; margin: 0 auto 1.5rem;">
+                There are no meals recorded for {{ formatted_date }}. Select another date above or scan a meal now.
+            </p>
+            <a href="{{ url_for('scanner.scanner_page') }}" class="btn btn-primary">
+                📷 Scan a Meal for Today
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const datePicker = document.getElementById("history-date-picker");
+    if (datePicker) {
+        datePicker.addEventListener("change", (e) => {
+            window.location.href = `{{ url_for('meal.history_page') }}?date=${e.target.value}`;
+        });
+    }
+
+    function goToDate(which) {
+        const d = new Date();
+        if (which === 'yesterday') {
+            d.setDate(d.getDate() - 1);
+        }
+        const isoDate = d.toISOString().split('T')[0];
+        window.location.href = `{{ url_for('meal.history_page') }}?date=${isoDate}`;
+    }
+
+    async function deleteMeal(mealId) {
+        if (!confirm("Are you sure you want to delete this meal record?")) return;
+
+        try {
+            const resp = await fetch(`/api/meals/${mealId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+            const data = await resp.json();
+            if (data.success) {
+                const card = document.getElementById(`meal-card-${mealId}`);
+                if (card) {
+                    card.style.opacity = "0";
+                    setTimeout(() => card.remove(), 300);
+                }
+                setTimeout(() => window.location.reload(), 350);
+            } else {
+                alert(data.message || "Failed to delete meal.");
+            }
+        } catch (err) {
+            alert("Error deleting meal: " + err.message);
+        }
+    }
+</script>
+{% endblock %}

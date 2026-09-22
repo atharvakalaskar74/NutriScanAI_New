@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}AI Nutrition Assistant — NutriScan AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+    <!-- Chat Assistant Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <h1 style="font-size: 2.2rem; margin-bottom: 0.25rem;">🤖 AI Nutrition Assistant</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Powered by Gemini. Tailored directly to your daily intake and targets.
+            </p>
+        </div>
+        <button type="button" id="btn-clear-chat" class="btn btn-secondary btn-sm">
+            🗑️ Clear Conversation
+        </button>
+    </div>
+
+    <!-- Active Nutrition Context Banner -->
+    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--border-highlight); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.88rem;">
+        <div>
+            <span>Tracking for <strong>{{ user['full_name'].split()[0] }}</strong> ({{ user.get('fitness_goal', 'maintain').replace('_', ' ') }})</span>
+        </div>
+        <div style="color: var(--text-main);">
+            Intake Today: <strong>{{ summary.get('total_calories', 0)|round(0)|int }}</strong> / {{ goals.get('calorie_target', 2000) }} kcal &bull; 
+            <span style="color: var(--primary-light); font-weight: 600;">{{ cal_remaining|round(0)|int }} kcal remaining</span>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Message Stream Area -->
+        <div class="chat-messages" id="chat-messages">
+            <!-- Assistant Welcome Bubble -->
+            <div class="message-bubble message-assistant">
+                <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 0.25rem;">
+                    🥗 NutriScan AI Assistant
+                </div>
+                <div>
+                    Hello {{ user['full_name'].split()[0] }}! I am your AI Nutritionist. Based on your current tracker, you have <strong>{{ cal_remaining|round(0)|int }} kcal</strong> remaining for today. How can I help you choose healthy meals or balance your macros?
+                </div>
+            </div>
+
+            <!-- Existing Stored Chat History -->
+            {% for item in history %}
+                <div class="message-bubble {% if item['role'] == 'user' %}message-user{% else %}message-assistant{% endif %}">
+                    {% if item['role'] == 'assistant' %}
+                        <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 0.25rem;">
+                            🥗 NutriScan AI Assistant
+                        </div>
+                    {% endif %}
+                    <div>{{ item['message']|replace('\n', '<br>')|safe }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Prompt Suggestions Chips -->
+        <div class="chat-chips">
+            <span style="font-size: 0.8rem; color: var(--text-dim); display: flex; align-items: center; margin-right: 0.25rem;">Suggested:</span>
+            <button type="button" class="chip-btn" onclick="sendPrompt('What should I eat for dinner with my remaining calories?')">
+                🍽️ Dinner with remaining kcal
+            </button>
+            <button type="button" class="chip-btn" onclick="sendPrompt('Suggest 3 healthy high-protein snacks.')">
+                🥩 High-protein snacks
+            </button>
+            <button type="button" class="chip-btn" onclick="sendPrompt('How balanced are my macronutrients today?')">
+                📊 Review today's balance
+            </button>
+            <button type="button" class="chip-btn" onclick="sendPrompt('What are good vegetarian protein sources?')">
+                🌱 Vegetarian protein ideas
+            </button>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-bar">
+            <input type="text" id="chat-input" class="form-control" placeholder="Ask about recipes, remaining calories, meal ideas..." autocomplete="off">
+            <button type="button" id="btn-chat-send" class="btn btn-primary" style="min-width: 100px;">
+                Send ➤
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}

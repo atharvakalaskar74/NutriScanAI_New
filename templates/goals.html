@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Nutrition Calculator & Goals — NutriScan AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">🎯 Nutrition Calculator & Goals</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 620px; margin: 0 auto;">
+            Personalized calorie and macronutrient targets calculated using the clinical Mifflin-St Jeor formula and activity-based TDEE estimation.
+        </p>
+    </div>
+
+    <!-- Scientific Estimates Banner -->
+    <div class="grid-2" style="margin-bottom: 2rem;">
+        <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(19, 29, 51, 0.8));">
+            <span class="badge badge-source-db" style="margin-bottom: 0.5rem;">Mifflin-St Jeor Formula</span>
+            <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Estimated Basal Metabolic Rate (BMR)</div>
+            <div style="font-size: 2.4rem; font-weight: 800; color: var(--primary-light); margin: 0.25rem 0;">
+                {{ goals.get('bmr_kcal', recommended.get('bmr_kcal', 1600))|round(0)|int }}
+                <span style="font-size: 1rem; font-weight: 500; color: var(--text-muted);">kcal/day</span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-dim);">
+                Calories your body burns completely at rest to maintain essential vital organ functions.
+            </p>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(19, 29, 51, 0.8));">
+            <span class="badge badge-source-ai" style="margin-bottom: 0.5rem;">Activity Adjusted</span>
+            <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Total Daily Energy Expenditure (TDEE)</div>
+            <div style="font-size: 2.4rem; font-weight: 800; color: var(--accent-blue); margin: 0.25rem 0;">
+                {{ goals.get('tdee_kcal', recommended.get('tdee_kcal', 2000))|round(0)|int }}
+                <span style="font-size: 1rem; font-weight: 500; color: var(--text-muted);">kcal/day</span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-dim);">
+                Total energy expended including physical activity. Adjusting from this number dictates weight change.
+            </p>
+        </div>
+    </div>
+
+    <!-- Interactive Goal Configuration Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+            <div>
+                <h2 class="card-title" style="font-size: 1.35rem;">Daily Nutrition Targets</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Customize your daily calorie intake and macronutrient split or restore recommended targets.
+                </p>
+            </div>
+            <button type="button" id="btn-apply-recommended" class="btn btn-secondary btn-sm">
+                🔄 Apply Recommended
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('goals.goals_page') }}" style="margin-top: 1.5rem;">
+            <!-- Calories Slider & Input -->
+            <div class="form-group" style="background: rgba(11, 17, 32, 0.5); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label class="form-label" for="calorie_target" style="font-weight: 700; color: var(--text-main); margin-bottom: 0;">
+                        🔥 Daily Calorie Target (kcal)
+                    </label>
+                    <span id="cal-badge" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-light);">
+                        {{ goals.get('calorie_target', 2000) }} kcal
+                    </span>
+                </div>
+                <input type="range" id="calorie_target_range" min="1000" max="4500" step="25" value="{{ goals.get('calorie_target', 2000) }}" style="width: 100%; accent-color: var(--primary); cursor: pointer;">
+                <input type="hidden" id="calorie_target" name="calorie_target" value="{{ goals.get('calorie_target', 2000) }}">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">
+                    <span>1,000 kcal</span>
+                    <span>Recommended: {{ recommended.get('calorie_target', 2000) }} kcal</span>
+                    <span>4,500 kcal</span>
+                </div>
+            </div>
+
+            <!-- Macronutrient Inputs -->
+            <div class="grid-3" style="margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" for="protein_target_g" style="color: var(--accent-blue); font-weight: 600;">
+                        🥩 Protein Target (g)
+                    </label>
+                    <input type="number" step="0.5" id="protein_target_g" name="protein_target_g" class="form-control" value="{{ goals.get('protein_target_g', 75) }}" required>
+                    <div class="form-helper">4 kcal / gram</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="carbs_target_g" style="color: var(--accent-amber); font-weight: 600;">
+                        🍚 Carbohydrates Target (g)
+                    </label>
+                    <input type="number" step="0.5" id="carbs_target_g" name="carbs_target_g" class="form-control" value="{{ goals.get('carbs_target_g', 250) }}" required>
+                    <div class="form-helper">4 kcal / gram</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="fat_target_g" style="color: #f43f5e; font-weight: 600;">
+                        🥑 Fat Target (g)
+                    </label>
+                    <input type="number" step="0.5" id="fat_target_g" name="fat_target_g" class="form-control" value="{{ goals.get('fat_target_g', 65) }}" required>
+                    <div class="form-helper">9 kcal / gram</div>
+                </div>
+            </div>
+
+            <!-- Water & Fiber Target -->
+            <div class="form-row" style="margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" for="water_target_ml">💧 Daily Water Target (ml)</label>
+                    <input type="number" id="water_target_ml" name="water_target_ml" class="form-control" value="{{ goals.get('water_target_ml', 2500) }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="fiber_target_g">🥦 Dietary Fiber Target (g)</label>
+                    <input type="number" step="0.5" id="fiber_target_g" name="fiber_target_g" class="form-control" value="{{ goals.get('fiber_target_g', 30.0) }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                💾 Save Nutrition Targets
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const calRange = document.getElementById("calorie_target_range");
+    const calInput = document.getElementById("calorie_target");
+    const calBadge = document.getElementById("cal-badge");
+    const proInput = document.getElementById("protein_target_g");
+    const carbInput = document.getElementById("carbs_target_g");
+    const fatInput = document.getElementById("fat_target_g");
+
+    if (calRange) {
+        calRange.addEventListener("input", (e) => {
+            const val = e.target.value;
+            calInput.value = val;
+            calBadge.textContent = `${val} kcal`;
+        });
+    }
+
+    const recTargets = {{ recommended|tojson }};
+    const btnApplyRec = document.getElementById("btn-apply-recommended");
+    if (btnApplyRec && recTargets) {
+        btnApplyRec.addEventListener("click", () => {
+            if (recTargets.calorie_target) {
+                calRange.value = recTargets.calorie_target;
+                calInput.value = recTargets.calorie_target;
+                calBadge.textContent = `${recTargets.calorie_target} kcal`;
+            }
+            if (recTargets.protein_target_g) proInput.value = recTargets.protein_target_g;
+            if (recTargets.carbs_target_g) carbInput.value = recTargets.carbs_target_g;
+            if (recTargets.fat_target_g) fatInput.value = recTargets.fat_target_g;
+        });
+    }
+</script>
+{% endblock %}

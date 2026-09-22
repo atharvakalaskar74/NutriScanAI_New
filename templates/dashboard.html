@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — NutriScan AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header Greeting & Quick Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 2rem; margin-bottom: 0.25rem;">
+                Hello, {{ user['full_name'].split()[0] }}! 👋
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Today is <strong>{{ today_str }}</strong> &bull; Goal: <span style="text-transform: capitalize; color: var(--primary-light);">{{ user.get('fitness_goal', 'maintain').replace('_', ' ') }}</span>
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{{ url_for('scanner.scanner_page') }}" class="btn btn-primary">
+                📷 Scan Food
+            </a>
+            <a href="{{ url_for('chatbot.assistant_page') }}" class="btn btn-secondary">
+                🤖 AI Assistant
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Metrics Grid -->
+    <div class="grid-4" style="margin-bottom: 2rem;">
+        <!-- Calories Card -->
+        <div class="card" style="border-top: 3px solid var(--primary);">
+            <div class="card-header">
+                <span class="card-title">🔥 Calories</span>
+                <span style="font-size: 0.85rem; color: var(--text-dim);">Target: {{ goals.get('calorie_target', 2000) }} kcal</span>
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+                {{ summary.get('total_calories', 0)|round(0)|int }}
+                <span style="font-size: 1rem; font-weight: 500; color: var(--text-muted);">kcal</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar progress-calories" style="width: {{ cal_pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                <span>{{ cal_pct }}% of target</span>
+                <span style="color: {% if cal_remaining > 0 %}var(--primary-light){% else %}var(--accent-red){% endif %}; font-weight: 600;">
+                    {{ cal_remaining|round(0)|int }} kcal left
+                </span>
+            </div>
+        </div>
+
+        <!-- Protein Card -->
+        <div class="card" style="border-top: 3px solid var(--accent-blue);">
+            <div class="card-header">
+                <span class="card-title">🥩 Protein</span>
+                <span style="font-size: 0.85rem; color: var(--text-dim);">Target: {{ goals.get('protein_target_g', 75)|round(0)|int }}g</span>
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+                {{ summary.get('total_protein_g', 0)|round(1) }}
+                <span style="font-size: 1rem; font-weight: 500; color: var(--text-muted);">g</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar progress-protein" style="width: {{ pro_pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                <span>{{ pro_pct }}% achieved</span>
+                <span>{{ pro_remaining|round(1) }}g remaining</span>
+            </div>
+        </div>
+
+        <!-- Carbs Card -->
+        <div class="card" style="border-top: 3px solid var(--accent-amber);">
+            <div class="card-header">
+                <span class="card-title">🍚 Carbohydrates</span>
+                <span style="font-size: 0.85rem; color: var(--text-dim);">Target: {{ goals.get('carbs_target_g', 250)|round(0)|int }}g</span>
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+                {{ summary.get('total_carbs_g', 0)|round(1) }}
+                <span style="font-size: 1rem; font-weight: 500; color: var(--text-muted);">g</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar progress-carbs" style="width: {{ carb_pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                <span>{{ carb_pct }}% consumed</span>
+                <span>{{ carb_remaining|round(1) }}g remaining</span>
+            </div>
+        </div>
+
+        <!-- Fat Card -->
+        <div class="card" style="border-top: 3px solid #f43f5e;">
+            <div class="card-header">
+                <span class="card-title">🥑 Healthy Fats</span>
+                <span style="font-size: 0.85rem; color: var(--text-dim);">Target: {{ goals.get('fat_target_g', 65)|round(0)|int }}g</span>
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+                {{ summary.get('total_fat_g', 0)|round(1) }}
+                <span style="font-size: 1rem; font-weight: 500; color: var(--text-muted);">g</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar progress-fat" style="width: {{ fat_pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                <span>{{ fat_pct }}% consumed</span>
+                <span>{{ fat_remaining|round(1) }}g remaining</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Row: Wellness Score & Scan Callout -->
+    <div class="grid-2" style="margin-bottom: 2rem;">
+        <!-- Wellness Score Card -->
+        <div class="card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <span class="badge badge-source-ai" style="margin-bottom: 0.5rem;">Daily Wellness Metric</span>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.35rem;">NutriScan Health Score</h3>
+                <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 340px;">
+                    Objective score calculated from calorie adherence, protein sufficiency, macro balance, and meal logging consistency.
+                </p>
+            </div>
+            <div style="text-align: center; background: rgba(11, 17, 32, 0.6); padding: 1.25rem 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div style="font-size: 3rem; font-weight: 800; color: {% if wellness_score >= 80 %}var(--primary-light){% elif wellness_score >= 60 %}var(--accent-blue){% else %}var(--accent-amber){% endif %}; line-height: 1;">
+                    {{ wellness_score }}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-top: 0.25rem;">
+                    Out of 100
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick AI Scanner Callout -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(56, 189, 248, 0.08)); border-color: var(--border-highlight); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.35rem;">Eating a meal right now?</h3>
+                <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 320px;">
+                    Snap your food with your camera or upload a photo to identify dishes and log your calories instantly.
+                </p>
+            </div>
+            <a href="{{ url_for('scanner.scanner_page') }}" class="btn btn-primary btn-lg">
+                📷 Scan Now
+            </a>
+        </div>
+    </div>
+
+    <!-- Today's Logged Meals Timeline -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title" style="font-size: 1.3rem;">
+                🍽️ Today's Logged Meals ({{ today_meals|length }})
+            </h2>
+            <a href="{{ url_for('meal.history_page') }}" class="btn btn-secondary btn-sm">
+                View Full History &rarr;
+            </a>
+        </div>
+
+        {% if today_meals %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for meal in today_meals %}
+                    <div style="background: rgba(11, 17, 32, 0.5); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span class="badge badge-{{ meal['meal_type'] }}">{{ meal['meal_type'] }}</span>
+                                <span style="font-size: 0.85rem; color: var(--text-dim);">Logged at {{ meal['meal_time'] }}</span>
+                            </div>
+                            <div style="font-weight: 700; color: var(--primary-light); font-size: 1.1rem;">
+                                {{ meal['total_calories']|round(0)|int }} kcal
+                            </div>
+                        </div>
+
+                        <!-- Meal Items List -->
+                        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                            {% for item in meal.get('items', []) %}
+                                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-main); background: rgba(255,255,255,0.02); padding: 0.4rem 0.6rem; border-radius: 4px;">
+                                    <div>
+                                        <strong>{{ item['food_name'] }}</strong>
+                                        <span style="color: var(--text-dim); font-size: 0.8rem;">({{ item['weight_g']|round(0)|int }}g)</span>
+                                    </div>
+                                    <div style="color: var(--text-muted); font-size: 0.85rem;">
+                                        <span>{{ item['calories']|round(0)|int }} kcal</span> &bull;
+                                        <span>P: {{ item['protein_g']|round(1) }}g</span> &bull;
+                                        <span>C: {{ item['carbs_g']|round(1) }}g</span> &bull;
+                                        <span>F: {{ item['fat_g']|round(1) }}g</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if meal.get('image_url') %}
+                            <div style="margin-top: 0.75rem;">
+                                <a href="{{ meal['image_url'] }}" target="_blank" style="font-size: 0.8rem; color: var(--accent-blue);">
+                                    🖼️ View Scanned Meal Image
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div style="text-align: center; padding: 3rem 1rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">🥗</div>
+                <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">No meals logged yet today</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto 1.5rem;">
+                    You haven't tracked any food for today yet. Use the camera food scanner to log your breakfast, lunch, or snack!
+                </p>
+                <a href="{{ url_for('scanner.scanner_page') }}" class="btn btn-primary">
+                    📷 Scan Your First Meal
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
