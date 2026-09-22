@@ -47,18 +47,22 @@ def execute_query(sql, params=None, fetchone=False, fetchall=False, insert_id=Fa
 def init_db():
     """
     Initializes the database and creates required tables and seed data if not present.
-    First connects to MySQL server without database to create nutriscan_ai_db,
-    then executes schema.sql statements.
+    In local development, ensures the database exists first.
+    In cloud environments, connects directly to the configured database.
     """
     try:
-        # Step 1: Ensure database exists
-        server_params = Config.get_db_config(include_db=False)
-        conn = pymysql.connect(**server_params)
-        with conn.cursor() as cursor:
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{Config.DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
-        conn.close()
+        # Step 1: Attempt to ensure database exists if local or permissions permit
+        try:
+            server_params = Config.get_db_config(include_db=False)
+            conn = pymysql.connect(**server_params)
+            with conn.cursor() as cursor:
+                cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{Config.DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+            conn.close()
+        except Exception as db_create_err:
+            # In managed cloud databases (e.g. TiDB Cloud), CREATE DATABASE may be restricted or pre-created
+            pass
 
-        # Step 2: Run schema.sql statements
+        # Step 2: Run schema.sql statements on the active database
         schema_path = Path(__file__).resolve().parent / "schema.sql"
         if schema_path.exists():
             with open(schema_path, "r", encoding="utf-8") as f:
@@ -79,7 +83,13 @@ def init_db():
                     for stmt in statements:
                         cleaned = stmt.strip()
                         if cleaned and not cleaned.lower().startswith("create database") and not cleaned.lower().startswith("use "):
-                            cursor.execute(cleaned)
+                            try:
+                                cursor.execute(cleaned)
+                            except Exception as table_err:
+                                err_str = str(table_err).lower()
+                                if "already exists" not in err_str and "duplicate" not in err_str:
+                                    # Log but keep running remaining tables/seed statements
+                                    print(f"[Database Init Info] Statement skipped: {table_err}")
             print(f"[Database] Successfully initialized database '{Config.DB_NAME}'.")
             return True
         else:

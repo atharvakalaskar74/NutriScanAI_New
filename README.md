@@ -224,60 +224,97 @@ Run the complete unit and integration test suite:
 
 ---
 
-## 🚀 Free-Tier Cloud Deployment Guide
+## 🚀 Zero-Cost Cloud Deployment Guide (₹0 / $0 — No Credit Card Required)
 
-NutriScan AI is engineered for zero-cost deployment using free-tier cloud platforms.
+NutriScan AI is engineered for zero-cost deployment using currently available free-tier services.
 
-### Recommended Free-Tier Architecture:
-- **Application Web Service**: [Render.com](https://render.com) (Free Tier Web Service) or [Railway](https://railway.app)
-- **Database**: [Aiven Free MySQL](https://aiven.io/mysql) (Free 5GB MySQL instance) or [TiDB Serverless](https://tidb.cloud/) (Free 5GB MySQL-compatible database)
+### Current Free-Tier Architecture:
+- **Cloud Web Hosting**: [Render.com](https://render.com) (Free Web Service — 512 MB RAM, free `*.onrender.com` HTTPS domain, no credit card required)
+- **Cloud MySQL Database**: [TiDB Cloud Starter](https://tidbcloud.com/) (Serverless — 5 GiB free MySQL 8.0 compatible storage, 50M Request Units/month, no credit card required, never expires)
+- **Multimodal AI**: [Google Gemini API](https://aistudio.google.com/) (Free Developer API tier)
 
-### Deploying to Render:
-1. Push your repository to **GitHub**:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit of NutriScan AI"
-   git remote add origin https://github.com/your-username/NutriScanAI.git
+---
+
+### Step 1: Create Free Cloud MySQL Database (TiDB Cloud Starter)
+1. Sign up for free at [tidbcloud.com](https://tidbcloud.com/) (Log in with GitHub or Google — no credit card needed).
+2. Click **Create Cluster** and select **Starter** (Free).
+3. Choose your nearest region (e.g., AWS / Singapore or US) and click **Create**.
+4. In the security dialog, generate your root password and save it securely.
+5. In the TiDB Cloud Console, click **SQL Editor**:
+   - Open [`database/schema_cloud.sql`](database/schema_cloud.sql) from this project.
+   - Copy the entire SQL content, paste it into the TiDB Cloud SQL Editor, and click **Run**.
+   - This creates all 8 tables (`users`, `nutrition_goals`, `foods`, `food_nutrition`, `meals`, `meal_items`, `ai_analyses`, `chat_history`) and inserts 30 pre-seeded staple foods.
+6. Click the **Connect** button in your cluster dashboard and select **PyMySQL**:
+   - Note down your `Host`, `Port` (usually `4000`), `User` (e.g. `xxxx.root`), and `Database` (`test` or your cluster name).
+
+---
+
+### Step 2: Push Project to GitHub
+1. Create a new repository on [GitHub](https://github.com/new) named `NutriScanAI_New` (set to **Public** or **Private**).
+2. Push your code:
+   ```powershell
+   git remote add origin https://github.com/your-username/NutriScanAI_New.git
+   git branch -M main
    git push -u origin main
    ```
-2. Log in to [Render.com](https://render.com) and click **New + > Web Service**.
-3. Connect your GitHub repository.
-4. Set the build parameters:
-   - **Environment**: `Python 3`
+
+---
+
+### Step 3: Deploy to Render
+1. Sign up or log in to [Render.com](https://render.com) with your GitHub account.
+2. From the dashboard, click **New + > Web Service**.
+3. Select your `NutriScanAI_New` GitHub repository and click **Connect**.
+4. Configure service settings:
+   - **Name**: `nutriscan-ai` (or your preferred name)
+   - **Region**: Nearest to your TiDB database (e.g. Singapore, Oregon, Frankfurt)
+   - **Branch**: `main`
+   - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `gunicorn app:app`
-5. Under **Environment Variables**, add:
-   - `SECRET_KEY`: (random 32-character string)
-   - `FLASK_ENV`: `production`
-   - `DATABASE_HOST`: (your cloud MySQL host, e.g. from Aiven/TiDB)
-   - `DATABASE_PORT`: `3306`
-   - `DATABASE_NAME`: `nutriscan_ai_db`
-   - `DATABASE_USER`: (your cloud database username)
-   - `DATABASE_PASSWORD`: (your cloud database password)
-   - `GEMINI_API_KEY`: (your free Gemini API key)
-   - `GEMINI_MODEL`: `gemini-2.5-flash`
-6. Click **Create Web Service**. Render will build and deploy the app with automatic SSL/HTTPS.
+   - **Instance Type**: Select **Free** (512 MB RAM)
+5. Scroll down to **Environment Variables** and add the following:
+
+   | Variable | Value / Description |
+   |---|---|
+   | `SECRET_KEY` | Strong random 32-character string |
+   | `FLASK_ENV` | `production` |
+   | `FLASK_DEBUG` | `False` |
+   | `DATABASE_HOST` | Your TiDB Cloud Gateway Host (e.g. `gateway01.ap-southeast-1.prod.aws.tidbcloud.com`) |
+   | `DATABASE_PORT` | `4000` |
+   | `DATABASE_NAME` | `test` (or your TiDB database name) |
+   | `DATABASE_USER` | Your TiDB username (e.g. `2yBxxxx.root`) |
+   | `DATABASE_PASSWORD` | Your TiDB root password |
+   | `DATABASE_SSL` | `True` |
+   | `GEMINI_API_KEY` | Your Google Gemini API key from [Google AI Studio](https://aistudio.google.com/) |
+   | `GEMINI_MODEL` | `gemini-3.6-flash` |
+
+6. Click **Deploy Web Service**.
+7. Render will build the environment, install dependencies, and launch Gunicorn. Within 2–3 minutes, your application will be live at `https://<your-service-name>.onrender.com`!
+8. Test your live deployment:
+   - Visit `https://<your-service-name>.onrender.com/health` — should return `{"status": "healthy", "database_connected": true}`.
+   - Register an account, test the camera food scanner, and chat with the AI assistant.
 
 ---
 
 ## 📋 Environment Variables Reference
 
-| Variable | Required | Default (Local) | Description |
-|---|---|---|---|
-| `SECRET_KEY` | Yes | `nutriscan_ai_...` | Flask session encryption key |
-| `FLASK_ENV` | No | `development` | Environment mode (`development` / `production`) |
-| `FLASK_DEBUG` | No | `True` | Flask debugger flag |
-| `PORT` | No | `5000` | Port for the web server (supplied by cloud host) |
-| `DATABASE_HOST` | Yes | `localhost` | MySQL database host address |
-| `DATABASE_PORT` | Yes | `3306` | MySQL port |
-| `DATABASE_NAME` | Yes | `nutriscan_ai_db` | MySQL database name |
-| `DATABASE_USER` | Yes | `root` | MySQL database username |
-| `DATABASE_PASSWORD`| Yes | *(empty)* | MySQL database password |
-| `GEMINI_API_KEY` | Optional | *(empty)* | Google Gemini API key from AI Studio |
-| `GEMINI_MODEL` | No | `gemini-2.5-flash` | Gemini model name |
-| `MAX_CONTENT_LENGTH`| No | `16777216` | Maximum file upload size in bytes (16MB) |
-| `UPLOAD_FOLDER` | No | `uploads` | Directory for compressed meal images |
+| Variable | Required | Default (Local) | Cloud (Render) | Description |
+|---|---|---|---|---|
+| `SECRET_KEY` | Yes | `nutriscan_ai_...` | *(Random String)* | Flask session encryption key |
+| `FLASK_ENV` | No | `development` | `production` | Environment mode |
+| `FLASK_DEBUG` | No | `True` | `False` | Flask debugger flag |
+| `PORT` | No | `5050` | *(Render provides)* | Web server port |
+| `DATABASE_HOST` | Yes | `localhost` | *(TiDB host)* | MySQL host address |
+| `DATABASE_PORT` | Yes | `3306` | `4000` | MySQL port |
+| `DATABASE_NAME` | Yes | `nutriscan_ai_db` | `test` | Database name |
+| `DATABASE_USER` | Yes | `root` | *(TiDB user)* | Database username |
+| `DATABASE_PASSWORD`| Yes | *(empty)* | *(TiDB pass)* | Database password |
+| `DATABASE_SSL` | No | `False` | `True` | Enable TLS/SSL connection |
+| `DATABASE_SSL_CA` | No | *(empty)* | *(empty)* | Optional path to CA bundle |
+| `GEMINI_API_KEY` | Yes | *(your key)* | *(your key)* | Google Gemini API key |
+| `GEMINI_MODEL` | No | `gemini-3.6-flash` | `gemini-3.6-flash` | Gemini model name |
+| `MAX_CONTENT_LENGTH`| No | `16777216` | `16777216` | Max upload size in bytes (16MB) |
+| `UPLOAD_FOLDER` | No | `uploads` | `uploads` | Storage folder for meal scans |
 
 ---
 

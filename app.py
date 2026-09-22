@@ -41,10 +41,23 @@ def create_app():
             return redirect(url_for("dashboard.dashboard_page"))
         return render_template("index.html")
 
-    # Secure uploads route
+    # Secure uploads route with ephemeral resilience
     @app.route("/uploads/<path:filename>")
     def uploaded_file(filename):
-        return send_from_directory(Config.UPLOAD_FOLDER, filename)
+        full_path = os.path.join(Config.UPLOAD_FOLDER, filename)
+        if os.path.isfile(full_path):
+            return send_from_directory(Config.UPLOAD_FOLDER, filename)
+        
+        # Return clean food placeholder if file was removed after dyno restart
+        from flask import Response
+        svg = (
+            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">'
+            '<rect width="400" height="300" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>'
+            '<text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" font-size="48">🍽️</text>'
+            '<text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#64748b">NutriScan AI — Meal Record Preserved</text>'
+            '</svg>'
+        )
+        return Response(svg, mimetype="image/svg+xml")
 
     # Health check endpoint for deployment monitoring
     @app.route("/health")

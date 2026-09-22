@@ -18,3 +18,9 @@ uploads/*
 .idea/
 *.DS_Store
 Thumbs.db
+
+# Backups & Archives
+*.zip
+*.tar.gz
+*_backup.sql
+database/nutriscan_ai_db_backup.sql
