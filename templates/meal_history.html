@@ -29,25 +29,25 @@
         </div>
 
         <div class="grid-4" style="text-align: center;">
-            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
-                <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary-light);">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.85rem; border-radius: var(--radius-sm);">
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary);">
                     {{ summary.get('total_calories', 0)|round(0)|int }}
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Calories (kcal)</div>
             </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.85rem; border-radius: var(--radius-sm);">
                 <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-blue);">
                     {{ summary.get('total_protein_g', 0)|round(1) }}g
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Protein</div>
             </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.85rem; border-radius: var(--radius-sm);">
                 <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-amber);">
                     {{ summary.get('total_carbs_g', 0)|round(1) }}g
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Carbs</div>
             </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-sm);">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.85rem; border-radius: var(--radius-sm);">
                 <div style="font-size: 1.6rem; font-weight: 800; color: #f43f5e;">
                     {{ summary.get('total_fat_g', 0)|round(1) }}g
                 </div>
@@ -67,7 +67,7 @@
                             <span style="color: var(--text-muted); font-size: 0.9rem;">Logged at {{ meal['meal_time'] }}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-light);">
+                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary);">
                                 {{ meal['total_calories']|round(0)|int }} kcal
                             </div>
                             <button type="button" class="btn btn-danger btn-sm" onclick="deleteMeal({{ meal['id'] }})">
@@ -83,7 +83,7 @@
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                             {% for item in meal.get('items', []) %}
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(11, 17, 32, 0.5); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
                                     <div>
                                         <strong style="color: var(--text-main);">{{ item['food_name'] }}</strong>
                                         <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 0.5rem;">
@@ -102,7 +102,7 @@
                     </div>
 
                     {% if meal.get('notes') %}
-                        <div style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.5rem;">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.5rem;">
                             💬 <em>{{ meal['notes'] }}</em>
                         </div>
                     {% endif %}

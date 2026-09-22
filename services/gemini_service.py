@@ -98,7 +98,7 @@ class GeminiService:
                 mime_type=mime_type
             )
 
-            model_name = Config.GEMINI_MODEL or "gemini-2.5-flash"
+            model_name = Config.GEMINI_MODEL or "gemini-3.6-flash"
             response = client.models.generate_content(
                 model=model_name,
                 contents=[
@@ -254,13 +254,13 @@ INSTRUCTIONS:
                     contents.append(f"{role.upper()}: {msg.get('message', '')}")
             contents.append(f"USER: {user_message}")
 
-            model_name = Config.GEMINI_MODEL or "gemini-2.5-flash"
+            model_name = Config.GEMINI_MODEL or "gemini-3.6-flash"
             response = client.models.generate_content(
                 model=model_name,
                 contents=contents,
                 config=types.GenerateContentConfig(
                     temperature=0.7,
-                    max_output_tokens=800
+                    max_output_tokens=1500
                 )
             )
 

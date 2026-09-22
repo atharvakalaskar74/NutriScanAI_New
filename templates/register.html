@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container" style="max-width: 680px; margin: 1.5rem auto;">
-    <div class="card" style="box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+    <div class="card" style="box-shadow: var(--shadow-card);">
         <div style="text-align: center; margin-bottom: 2rem;">
             <div class="brand-icon" style="margin: 0 auto 1rem; width: 50px; height: 50px; font-size: 1.5rem;">🥗</div>
             <h1 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Join NutriScan AI</h1>
@@ -15,7 +15,7 @@
 
         <form method="POST" action="{{ url_for('auth.register_page') }}">
             <!-- Step 1: Account Credentials -->
-            <h3 style="font-size: 1.1rem; color: var(--primary-light); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+            <h3 style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
                 1. Account Credentials
             </h3>
             
@@ -36,7 +36,7 @@
             </div>
 
             <!-- Step 2: Physical & Demographic Information -->
-            <h3 style="font-size: 1.1rem; color: var(--primary-light); margin: 1.5rem 0 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+            <h3 style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin: 1.5rem 0 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
                 2. Physical Profile (Used for BMR & TDEE Calculations)
             </h3>
 
@@ -67,7 +67,7 @@
             </div>
 
             <!-- Step 3: Lifestyle & Fitness Goals -->
-            <h3 style="font-size: 1.1rem; color: var(--primary-light); margin: 1.5rem 0 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+            <h3 style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin: 1.5rem 0 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
                 3. Lifestyle & Nutrition Goal
             </h3>
 
@@ -93,7 +93,7 @@
                 </div>
             </div>
 
-            <div style="background: rgba(16, 185, 129, 0.08); border-left: 3px solid var(--primary); padding: 0.85rem 1rem; border-radius: var(--radius-sm); margin: 1.5rem 0; font-size: 0.85rem; color: var(--text-muted);">
+            <div style="background: #ecfdf5; border-left: 3px solid var(--primary); padding: 0.85rem 1rem; border-radius: var(--radius-sm); margin: 1.5rem 0; font-size: 0.85rem; color: #065f46;">
                 💡 <strong>Instant Setup:</strong> NutriScan AI will automatically calculate your initial daily calorie, protein, carbohydrate, and fat targets upon registration using the Mifflin-St Jeor equation. You can customize them anytime.
             </div>
 

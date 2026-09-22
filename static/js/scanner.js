@@ -202,8 +202,9 @@ function renderFoodItems(foods) {
 
         const card = document.createElement("div");
         card.className = "card";
-        card.style.background = "rgba(11, 17, 32, 0.6)";
+        card.style.background = "#ffffff";
         card.style.border = "1px solid var(--border-color)";
+        card.style.boxShadow = "var(--shadow-subtle)";
         card.style.padding = "1.25rem";
 
         card.innerHTML = `
@@ -214,8 +215,8 @@ function renderFoodItems(foods) {
                     <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 0.5rem;">${item.serving_description || ''}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Serving Weight:</label>
-                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.2rem 0.5rem;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Serving Weight:</label>
+                    <div style="display: flex; align-items: center; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-sm); padding: 0.25rem 0.6rem;">
                         <input type="number" 
                                class="item-weight-input" 
                                data-index="${index}" 
@@ -228,22 +229,22 @@ function renderFoodItems(foods) {
             </div>
 
             <!-- Scaled Nutrition Badges for this item -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; text-align: center; background: rgba(255,255,255,0.02); padding: 0.6rem; border-radius: var(--radius-sm);">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; text-align: center; background: #f8fafc; border: 1px solid var(--border-color); padding: 0.75rem 0.6rem; border-radius: var(--radius-sm);">
                 <div>
-                    <div id="item-${index}-cal" style="font-weight: 700; color: var(--primary-light); font-size: 1rem;">${Math.round(scaled.calories)} kcal</div>
-                    <div style="font-size: 0.7rem; color: var(--text-dim);">Calories</div>
+                    <div id="item-${index}-cal" style="font-weight: 700; color: var(--primary); font-size: 1.05rem;">${Math.round(scaled.calories)} kcal</div>
+                    <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Calories</div>
                 </div>
                 <div>
-                    <div id="item-${index}-pro" style="font-weight: 700; color: var(--accent-blue); font-size: 1rem;">${scaled.protein_g}g</div>
-                    <div style="font-size: 0.7rem; color: var(--text-dim);">Protein</div>
+                    <div id="item-${index}-pro" style="font-weight: 700; color: var(--accent-blue); font-size: 1.05rem;">${scaled.protein_g}g</div>
+                    <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Protein</div>
                 </div>
                 <div>
-                    <div id="item-${index}-carb" style="font-weight: 700; color: var(--accent-amber); font-size: 1rem;">${scaled.carbs_g}g</div>
-                    <div style="font-size: 0.7rem; color: var(--text-dim);">Carbs</div>
+                    <div id="item-${index}-carb" style="font-weight: 700; color: var(--accent-amber); font-size: 1.05rem;">${scaled.carbs_g}g</div>
+                    <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Carbs</div>
                 </div>
                 <div>
-                    <div id="item-${index}-fat" style="font-weight: 700; color: #f43f5e; font-size: 1rem;">${scaled.fat_g}g</div>
-                    <div style="font-size: 0.7rem; color: var(--text-dim);">Fat</div>
+                    <div id="item-${index}-fat" style="font-weight: 700; color: #f43f5e; font-size: 1.05rem;">${scaled.fat_g}g</div>
+                    <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Fat</div>
                 </div>
             </div>
         `;
